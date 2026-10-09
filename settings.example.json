@@ -1,0 +1,6 @@
+{
+  "apiKey": "sk-your-key-here",
+  "baseURL": "https://api.openai.com/v1",
+  "model": "gpt-4o-mini",
+  "apiMode": "chat_completions"
+}

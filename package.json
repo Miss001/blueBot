@@ -1,0 +1,32 @@
+{
+  "name": "bluebot",
+  "version": "0.1.0",
+  "description": "blueBot — 带内置浏览器的桌面 Agent，可自动读取当前页面并对话",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build": "tsc && node scripts/copy-renderer.js",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron .",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "electron",
+    "agent",
+    "browser"
+  ],
+  "author": "Miss001",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@openai/agents": "^0.20.0",
+    "openai": "^7.31.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "electron": "^33.2.1",
+    "typescript": "^7.0.2"
+  }
+}
