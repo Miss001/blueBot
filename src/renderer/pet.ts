@@ -1,19 +1,12 @@
 /// <reference path="./bluebot-api.d.ts" />
 
 const pet = document.getElementById('pet') as HTMLButtonElement;
-const petImg = document.getElementById('pet-img') as HTMLImageElement;
-const fallback = document.getElementById('pet-fallback') as HTMLSpanElement;
 const badge = document.getElementById('badge') as HTMLSpanElement;
 
 let dragging = false;
 let moved = false;
 let lastX = 0;
 let lastY = 0;
-
-petImg.addEventListener('error', () => {
-  petImg.hidden = true;
-  fallback.hidden = false;
-});
 
 pet.addEventListener('pointerdown', (e) => {
   dragging = true;
@@ -59,7 +52,7 @@ async function refreshBadge(): Promise<void> {
     badge.className = 'badge';
     if (!status.hasApiKey) {
       badge.classList.add('warn');
-      badge.title = '未配置 API Key';
+      badge.title = '未配置 API Key · 点击打开对话后点「设置」';
     } else {
       badge.classList.add('ok');
       badge.title = `已配置 · ${status.model}`;

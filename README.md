@@ -8,10 +8,10 @@ Windows 桌面**悬浮宠物**助手：安装/启动后出现在桌面上，点�
 
 ## 功能（当前版本）
 
-- 右下角置顶、无边框悬浮宠物（可拖动）；点击打开中文对话面板
+- 右下角置顶、无边框悬浮宠物（**SVG/CSS 绘制**，可拖动，带轻量 idle 动画）；点击打开中文对话面板
 - 后台轮询前台窗口；对话聚焦时保留上一次「外部窗口」缓存，避免读到自己
 - Agent 工具：`get_current_window_content`（可读标题 / 进程名 / 文本）
-- 配置：对话窗口右上角 **设置**（写入本机 userData `settings.json`），也可使用 `.env`（密钥不要提交到 Git）
+- 配置：对话窗口右上角 **⚙ 设置**（未配置 Key 时会自动打开并高亮；写入本机 userData `settings.json`），也可使用 `.env`（密钥不要提交到 Git）
 - 更清晰的 API Key / 超时 / 网络错误提示
 
 ## 环境要求
@@ -64,10 +64,10 @@ OPENAI_API_MODE=chat_completions
 ## 项目结构
 
 ```
-assets/                 宠物形象等静态资源
+assets/                 仅 OS 窗口图标（icon.png）；宠物本体为 SVG/CSS
 scripts/                构建脚本、Windows UIA 读取脚本
 src/main/               Electron 主进程、Agent、窗口读取
-src/renderer/           宠物窗口 + 对话面板（中文 UI）
+src/renderer/           宠物窗口（SVG）+ 对话面板（中文 UI / 设置）
 ```
 
 关键文件：

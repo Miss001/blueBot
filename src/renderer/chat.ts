@@ -93,16 +93,21 @@ async function refreshAgentStatus(): Promise<void> {
       agentStatus.textContent = `${status.statusLabel || '已配置'} · ${status.model}`;
       agentStatus.className = 'agent-status ok';
       agentStatus.title = `模型：${status.model}\n接口：${status.baseURL}\n模式：${status.apiMode}`;
+      btnSettings.classList.remove('needs-key');
     } else {
-      agentStatus.textContent = status.statusLabel || '未配置';
+      agentStatus.textContent = status.statusLabel || '未配置 · 点右上角「设置」';
       agentStatus.className = 'agent-status warn';
-      agentStatus.title = '点击右上角「设置」填写 API Key';
+      agentStatus.title = '点击右上角「⚙ 设置」填写 API Key';
+      btnSettings.classList.add('needs-key');
       if (!warnedKey) {
         warnedKey = true;
         appendMessage(
           'error',
-          '尚未配置有效的 API Key。请点击右上角「设置」，填写 API Key（可选 Base URL / 模型），点「保存并应用」。无需手动改 .env。',
+          '尚未配置有效的 API Key。请点击右上角「⚙ 设置」，填写 API Key（可选 Base URL / 模型），点「保存并应用」。无需手动改 .env。',
         );
+        if (!settingsOpen) {
+          void openSettings();
+        }
       }
     }
     if (!status.uiaAvailable) {
@@ -255,7 +260,7 @@ window.blueBot.onWindowUpdated((meta) => {
 
 appendMessage(
   'bot',
-  '你好，我是 blueBot。我是桌面上的小助手：你打开浏览器或任意软件后，我会尽量读取当前前台窗口内容。点右上角「设置」可配置 API。',
+  '你好，我是 blueBot。我是桌面上的小助手：你打开浏览器或任意软件后，我会尽量读取当前前台窗口内容。点右上角「⚙ 设置」可配置 API Key / Base URL / 模型。',
 );
 
 void refreshAgentStatus();

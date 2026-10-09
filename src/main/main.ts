@@ -56,7 +56,7 @@ function createPetWindow(): void {
     skipTaskbar: false,
     hasShadow: false,
     title: 'blueBot',
-    icon: nativeImage.createFromPath(asset('pet.png')),
+    icon: nativeImage.createFromPath(asset('icon.png')),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -117,7 +117,7 @@ function createChatWindow(): void {
     minHeight: 400,
     title: 'blueBot 对话',
     backgroundColor: '#0f1419',
-    icon: nativeImage.createFromPath(asset('pet.png')),
+    icon: nativeImage.createFromPath(asset('icon.png')),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
