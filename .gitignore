@@ -11,3 +11,5 @@ settings.local.json
 *.asar
 .vscode/
 .idea/
+settings.json
+!settings.example.json

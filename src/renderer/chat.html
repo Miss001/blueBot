@@ -21,10 +21,47 @@
           </div>
         </div>
         <div class="titlebar-actions">
+          <button id="btn-settings" type="button" title="API 设置">设置</button>
           <button id="btn-refresh" type="button" title="刷新前台窗口">刷新窗口</button>
           <button id="btn-close" type="button" title="关闭">×</button>
         </div>
       </header>
+
+      <section id="settings-panel" class="settings-panel hidden" aria-hidden="true">
+        <div class="settings-head">
+          <div>
+            <div class="settings-title">API 设置</div>
+            <div id="settings-status" class="settings-status">未配置</div>
+          </div>
+          <button id="btn-settings-close" type="button" class="linkish">关闭</button>
+        </div>
+        <label class="field">
+          <span>API Key</span>
+          <input id="set-api-key" type="password" autocomplete="off" placeholder="sk-…（留空则保留已有密钥）" />
+        </label>
+        <label class="field">
+          <span>Base URL（可选）</span>
+          <input id="set-base-url" type="text" autocomplete="off" placeholder="https://api.openai.com/v1 或兼容中转" />
+        </label>
+        <label class="field">
+          <span>Model</span>
+          <input id="set-model" type="text" autocomplete="off" placeholder="gpt-4o-mini" />
+        </label>
+        <label class="field">
+          <span>API Mode</span>
+          <select id="set-api-mode">
+            <option value="chat_completions">chat_completions（兼容中转）</option>
+            <option value="responses">responses</option>
+          </select>
+        </label>
+        <div class="settings-actions">
+          <button id="btn-settings-save" type="button">保存并应用</button>
+          <button id="btn-toggle-key" type="button" class="ghost">显示密钥</button>
+        </div>
+        <p class="settings-hint">
+          密钥保存在本机 userData 的 settings.json，不会提交到 Git。保存后立即生效，无需改 .env。
+        </p>
+      </section>
 
       <section class="focus-card">
         <div class="focus-label">当前关注窗口</div>

@@ -7,7 +7,7 @@ import {
   screen,
   nativeImage,
 } from 'electron';
-import { loadConfig } from './config';
+import { loadConfig, getPublicSettings, saveSettings, type SaveSettingsInput } from './config';
 import { getWindowMeta, clearWindowContent } from './windowStore';
 import { refreshWindowContent } from './uia';
 import { configureAgent, chatWithAgent } from './agent';
@@ -165,18 +165,53 @@ async function pollForeground(): Promise<void> {
 
 function registerIpc(): void {
   ipcMain.handle('agent:status', () => {
-    const config = loadConfig();
-    const placeholder =
-      !config.apiKey ||
-      config.apiKey.includes('your-key') ||
-      config.apiKey === 'sk-your-key-here';
+    const pub = getPublicSettings();
     return {
-      hasApiKey: Boolean(config.apiKey) && !placeholder,
-      model: config.model,
-      baseURL: config.baseURL || '(官方默认)',
-      apiMode: config.apiMode,
+      hasApiKey: pub.hasApiKey,
+      model: pub.model,
+      baseURL: pub.baseURL || '(官方默认)',
+      apiMode: pub.apiMode,
       platform: process.platform,
       uiaAvailable: process.platform === 'win32',
+      statusLabel: pub.statusLabel,
+      apiKeyMasked: pub.apiKeyMasked,
+      source: pub.source,
+    };
+  });
+
+  ipcMain.handle('settings:get', () => getPublicSettings());
+
+  ipcMain.handle('settings:save', (_event, raw: unknown) => {
+    if (!raw || typeof raw !== 'object') {
+      return { ok: false, error: '无效的设置参数' };
+    }
+    const body = raw as Record<string, unknown>;
+    const input: SaveSettingsInput = {
+      apiKey: typeof body.apiKey === 'string' ? body.apiKey : undefined,
+      baseURL: typeof body.baseURL === 'string' ? body.baseURL : undefined,
+      model: typeof body.model === 'string' ? body.model : undefined,
+      apiMode:
+        body.apiMode === 'responses' || body.apiMode === 'chat_completions'
+          ? body.apiMode
+          : undefined,
+      keepExistingKey: body.keepExistingKey !== false,
+    };
+    const saved = saveSettings(input);
+    if (!saved.ok) return saved;
+    const config = loadConfig();
+    const setup = configureAgent(config);
+    if (!setup.ok) {
+      return {
+        ok: true,
+        settings: saved.settings,
+        agentOk: false,
+        agentError: setup.error,
+      };
+    }
+    return {
+      ok: true,
+      settings: saved.settings,
+      agentOk: true,
     };
   });
 

@@ -13,6 +13,7 @@ export interface UiaReadResult {
   textLength?: number;
   error?: string;
   truncated?: boolean;
+  nodeCount?: number;
 }
 
 function scriptPath(): string {
@@ -34,10 +35,25 @@ function ourPids(): string {
   return [...list].join(',');
 }
 
+function decodePsOutput(buf: Buffer): string {
+  // Prefer UTF-8; strip BOM. Fallback to utf16le if it looks like UTF-16.
+  if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) {
+    return buf.toString('utf16le');
+  }
+  if (buf.length >= 2 && buf[0] === 0xfe && buf[1] === 0xff) {
+    // rare BE — decode as utf16le after swap is overkill; try utf8
+    return buf.toString('utf8');
+  }
+  let s = buf.toString('utf8');
+  if (s.charCodeAt(0) === 0xfeff) s = s.slice(1);
+  return s;
+}
+
 function runPowerShell(script: string, extraArgs: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
     const args = [
       '-NoProfile',
+      '-NonInteractive',
       '-ExecutionPolicy',
       'Bypass',
       '-File',
@@ -47,18 +63,23 @@ function runPowerShell(script: string, extraArgs: string[]): Promise<string> {
     const child = spawn('powershell.exe', args, {
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        // Reduce PS locale surprises for JSON
+        PYTHONIOENCODING: 'utf-8',
+      },
     });
-    let stdout = '';
-    let stderr = '';
+    const outChunks: Buffer[] = [];
+    const errChunks: Buffer[] = [];
     const timer = setTimeout(() => {
       child.kill();
       reject(new Error('读取窗口超时（UI Automation 超过 12 秒未返回）'));
     }, 12_000);
     child.stdout.on('data', (d: Buffer) => {
-      stdout += d.toString('utf8');
+      outChunks.push(d);
     });
     child.stderr.on('data', (d: Buffer) => {
-      stderr += d.toString('utf8');
+      errChunks.push(d);
     });
     child.on('error', (err) => {
       clearTimeout(timer);
@@ -66,17 +87,54 @@ function runPowerShell(script: string, extraArgs: string[]): Promise<string> {
     });
     child.on('close', (code) => {
       clearTimeout(timer);
-      if (code !== 0 && !stdout.trim()) {
+      const stdout = decodePsOutput(Buffer.concat(outChunks)).trim();
+      const stderr = decodePsOutput(Buffer.concat(errChunks)).trim();
+      if (code !== 0 && !stdout) {
         reject(
           new Error(
-            stderr.trim() || `PowerShell 退出码 ${code ?? 'unknown'}`,
+            stderr || `PowerShell 退出码 ${code ?? 'unknown'}`,
           ),
         );
         return;
       }
-      resolve(stdout.trim());
+      // If stderr has parser errors but we got JSON, still use stdout
+      resolve(stdout || stderr);
     });
   });
+}
+
+function extractJson(raw: string): UiaReadResult | null {
+  const cleaned = raw.replace(/^\uFEFF/, '').trim();
+  // Try whole string first
+  if (cleaned.startsWith('{')) {
+    try {
+      return JSON.parse(cleaned) as UiaReadResult;
+    } catch {
+      // fall through
+    }
+  }
+  // Last JSON-looking line
+  const lines = cleaned.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i];
+    if (!line.startsWith('{')) continue;
+    try {
+      return JSON.parse(line) as UiaReadResult;
+    } catch {
+      // continue
+    }
+  }
+  // Brace slice fallback
+  const start = cleaned.lastIndexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start >= 0 && end > start) {
+    try {
+      return JSON.parse(cleaned.slice(start, end + 1)) as UiaReadResult;
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 export async function readForegroundWindow(): Promise<UiaReadResult> {
@@ -95,23 +153,15 @@ export async function readForegroundWindow(): Promise<UiaReadResult> {
 
   try {
     const raw = await runPowerShell(script, ['-ExcludePids', ourPids()]);
-    // PowerShell may emit BOM or trailing noise; take last JSON-looking line
-    const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    let parsed: UiaReadResult | null = null;
-    for (let i = lines.length - 1; i >= 0; i--) {
-      const line = lines[i];
-      if (!line.startsWith('{')) continue;
-      try {
-        parsed = JSON.parse(line) as UiaReadResult;
-        break;
-      } catch {
-        // continue
-      }
-    }
+    const parsed = extractJson(raw);
     if (!parsed) {
+      // Avoid dumping garbled Chinese; show short ASCII-safe preview
+      const preview = raw
+        .replace(/[^\x20-\x7E\n\r]/g, '?')
+        .slice(0, 180);
       return {
         ok: false,
-        error: `无法解析 UI Automation 输出：${raw.slice(0, 200)}`,
+        error: `无法解析 UI Automation 输出：${preview || '(empty)'}`,
       };
     }
     return parsed;
@@ -140,5 +190,6 @@ export async function refreshWindowContent(): Promise<WindowContent> {
     processId: result.processId || 0,
     text: result.text || '',
     source: 'uia',
+    error: result.error,
   });
 }

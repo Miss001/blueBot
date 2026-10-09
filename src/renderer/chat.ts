@@ -9,9 +9,25 @@ const chatInput = document.getElementById('chat-input') as HTMLTextAreaElement;
 const btnSend = document.getElementById('btn-send') as HTMLButtonElement;
 const btnClose = document.getElementById('btn-close') as HTMLButtonElement;
 const btnRefresh = document.getElementById('btn-refresh') as HTMLButtonElement;
+const btnSettings = document.getElementById('btn-settings') as HTMLButtonElement;
+const settingsPanel = document.getElementById('settings-panel') as HTMLElement;
+const settingsStatus = document.getElementById('settings-status') as HTMLDivElement;
+const btnSettingsClose = document.getElementById(
+  'btn-settings-close',
+) as HTMLButtonElement;
+const btnSettingsSave = document.getElementById(
+  'btn-settings-save',
+) as HTMLButtonElement;
+const btnToggleKey = document.getElementById('btn-toggle-key') as HTMLButtonElement;
+const setApiKey = document.getElementById('set-api-key') as HTMLInputElement;
+const setBaseUrl = document.getElementById('set-base-url') as HTMLInputElement;
+const setModel = document.getElementById('set-model') as HTMLInputElement;
+const setApiMode = document.getElementById('set-api-mode') as HTMLSelectElement;
 
 let busy = false;
 let warnedKey = false;
+let settingsOpen = false;
+let existingMasked = '';
 
 function appendMessage(role: 'user' | 'bot' | 'error', text: string): void {
   const el = document.createElement('div');
@@ -55,26 +71,41 @@ function renderFocus(meta: WindowMeta): void {
   }
 }
 
+function applySettingsToForm(s: PublicSettings): void {
+  existingMasked = s.apiKeyMasked || '';
+  setApiKey.value = '';
+  setApiKey.placeholder = s.hasApiKey
+    ? `已保存 ${s.apiKeyMasked}（留空保留）`
+    : 'sk-…';
+  setBaseUrl.value = s.baseURL || '';
+  setModel.value = s.model || 'gpt-4o-mini';
+  setApiMode.value =
+    s.apiMode === 'responses' ? 'responses' : 'chat_completions';
+  settingsStatus.textContent = s.statusLabel;
+  settingsStatus.className =
+    'settings-status' + (s.hasApiKey ? ' ok' : '');
+}
+
 async function refreshAgentStatus(): Promise<void> {
   try {
     const status = await window.blueBot.getAgentStatus();
     if (status.hasApiKey) {
-      agentStatus.textContent = `已配置 · ${status.model}`;
+      agentStatus.textContent = `${status.statusLabel || '已配置'} · ${status.model}`;
       agentStatus.className = 'agent-status ok';
       agentStatus.title = `模型：${status.model}\n接口：${status.baseURL}\n模式：${status.apiMode}`;
     } else {
-      agentStatus.textContent = '未配置 API Key';
+      agentStatus.textContent = status.statusLabel || '未配置';
       agentStatus.className = 'agent-status warn';
-      agentStatus.title = '请在项目根目录创建 .env 并设置 OPENAI_API_KEY';
+      agentStatus.title = '点击右上角「设置」填写 API Key';
       if (!warnedKey) {
         warnedKey = true;
         appendMessage(
           'error',
-          '尚未配置有效的 API Key。请复制 .env.example 为 .env，填写 OPENAI_API_KEY（可选 OPENAI_BASE_URL / OPENAI_MODEL），保存后重启应用。若出现「请求超时」，多数也是 Key/接口地址不正确。',
+          '尚未配置有效的 API Key。请点击右上角「设置」，填写 API Key（可选 Base URL / 模型），点「保存并应用」。无需手动改 .env。',
         );
       }
     }
-    if (!status.uiaAvailable && !warnedKey) {
+    if (!status.uiaAvailable) {
       appendMessage(
         'error',
         `当前系统是 ${status.platform}，前台窗口读取仅支持 Windows（UI Automation）。`,
@@ -85,6 +116,81 @@ async function refreshAgentStatus(): Promise<void> {
     agentStatus.className = 'agent-status warn';
   }
 }
+
+async function openSettings(): Promise<void> {
+  settingsOpen = true;
+  settingsPanel.classList.remove('hidden');
+  settingsPanel.setAttribute('aria-hidden', 'false');
+  try {
+    const s = await window.blueBot.getSettings();
+    applySettingsToForm(s);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    appendMessage('error', `读取设置失败：${message}`);
+  }
+}
+
+function closeSettings(): void {
+  settingsOpen = false;
+  settingsPanel.classList.add('hidden');
+  settingsPanel.setAttribute('aria-hidden', 'true');
+}
+
+btnSettings.addEventListener('click', () => {
+  if (settingsOpen) closeSettings();
+  else void openSettings();
+});
+
+btnSettingsClose.addEventListener('click', () => {
+  closeSettings();
+});
+
+btnToggleKey.addEventListener('click', () => {
+  const show = setApiKey.type === 'password';
+  setApiKey.type = show ? 'text' : 'password';
+  btnToggleKey.textContent = show ? '隐藏密钥' : '显示密钥';
+});
+
+btnSettingsSave.addEventListener('click', async () => {
+  btnSettingsSave.disabled = true;
+  btnSettingsSave.textContent = '保存中…';
+  try {
+    const result = await window.blueBot.saveSettings({
+      apiKey: setApiKey.value,
+      baseURL: setBaseUrl.value,
+      model: setModel.value,
+      apiMode: setApiMode.value,
+      keepExistingKey: true,
+    });
+    if (!result.ok) {
+      appendMessage('error', result.error || '保存失败');
+      return;
+    }
+    if (result.settings) applySettingsToForm(result.settings);
+    await refreshAgentStatus();
+    if (result.agentOk === false) {
+      appendMessage(
+        'error',
+        result.agentError ||
+          '设置已保存，但 Agent 仍未就绪，请检查 API Key / Base URL。',
+      );
+    } else {
+      appendMessage(
+        'bot',
+        result.settings?.hasApiKey
+          ? `设置已保存并应用（${result.settings.statusLabel} · ${result.settings.model}）。现在可以对话了。`
+          : '设置已保存，但仍未检测到有效 API Key。',
+      );
+      if (result.settings?.hasApiKey) closeSettings();
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    appendMessage('error', message);
+  } finally {
+    btnSettingsSave.disabled = false;
+    btnSettingsSave.textContent = '保存并应用';
+  }
+});
 
 btnClose.addEventListener('click', () => {
   void window.blueBot.closeChat();
@@ -149,7 +255,7 @@ window.blueBot.onWindowUpdated((meta) => {
 
 appendMessage(
   'bot',
-  '你好，我是 blueBot。我是桌面上的小助手：你打开浏览器或任意软件后，我会尽量读取当前前台窗口内容。点我旁边可以问「根据当前窗口……」。',
+  '你好，我是 blueBot。我是桌面上的小助手：你打开浏览器或任意软件后，我会尽量读取当前前台窗口内容。点右上角「设置」可配置 API。',
 );
 
 void refreshAgentStatus();

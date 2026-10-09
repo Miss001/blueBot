@@ -5,6 +5,14 @@ contextBridge.exposeInMainWorld('blueBot', {
   chat: (message: string) => ipcRenderer.invoke('agent:chat', message),
   getWindowMeta: () => ipcRenderer.invoke('window:get'),
   refreshWindow: () => ipcRenderer.invoke('window:refresh'),
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  saveSettings: (input: {
+    apiKey?: string;
+    baseURL?: string;
+    model?: string;
+    apiMode?: string;
+    keepExistingKey?: boolean;
+  }) => ipcRenderer.invoke('settings:save', input),
   openChat: () => ipcRenderer.invoke('ui:openChat'),
   closeChat: () => ipcRenderer.invoke('ui:closeChat'),
   toggleChat: () => ipcRenderer.invoke('ui:toggleChat'),

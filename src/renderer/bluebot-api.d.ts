@@ -18,6 +18,19 @@ declare global {
     apiMode: string;
     platform: string;
     uiaAvailable: boolean;
+    statusLabel?: '已配置' | '未配置';
+    apiKeyMasked?: string;
+    source?: string;
+  }
+
+  interface PublicSettings {
+    hasApiKey: boolean;
+    apiKeyMasked: string;
+    baseURL: string;
+    model: string;
+    apiMode: string;
+    statusLabel: '已配置' | '未配置';
+    source: string;
   }
 
   interface Window {
@@ -30,6 +43,20 @@ declare global {
       refreshWindow: () => Promise<{
         ok: boolean;
         meta: WindowMeta;
+        error?: string;
+      }>;
+      getSettings: () => Promise<PublicSettings>;
+      saveSettings: (input: {
+        apiKey?: string;
+        baseURL?: string;
+        model?: string;
+        apiMode?: string;
+        keepExistingKey?: boolean;
+      }) => Promise<{
+        ok: boolean;
+        settings?: PublicSettings;
+        agentOk?: boolean;
+        agentError?: string;
         error?: string;
       }>;
       openChat: () => Promise<{ ok: boolean }>;

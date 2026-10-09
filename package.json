@@ -1,10 +1,10 @@
 {
   "name": "bluebot",
-  "version": "0.2.0",
-  "description": "blueBot — Windows 桌面悬浮宠物助手，读取前台窗口并通过 Agents SDK 对话",
+  "version": "0.2.1",
+  "description": "blueBot \u2014 Windows \u684c\u9762\u60ac\u6d6e\u5ba0\u7269\u52a9\u624b\uff0c\u8bfb\u53d6\u524d\u53f0\u7a97\u53e3\u5e76\u901a\u8fc7 Agents SDK \u5bf9\u8bdd",
   "main": "dist/main/main.js",
   "scripts": {
-    "build": "tsc && node scripts/copy-renderer.js",
+    "build": "tsc && node scripts/copy-renderer.js && node scripts/ensure-ps1-bom.js",
     "start": "npm run build && electron .",
     "dev": "npm run build && electron .",
     "typecheck": "tsc --noEmit"

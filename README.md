@@ -11,7 +11,7 @@ Windows 桌面**悬浮宠物**助手：安装/启动后出现在桌面上，点�
 - 右下角置顶、无边框悬浮宠物（可拖动）；点击打开中文对话面板
 - 后台轮询前台窗口；对话聚焦时保留上一次「外部窗口」缓存，避免读到自己
 - Agent 工具：`get_current_window_content`（可读标题 / 进程名 / 文本）
-- 配置：`.env` 或 `settings.json`（密钥不要提交到 Git）
+- 配置：对话窗口右上角 **设置**（写入本机 userData `settings.json`），也可使用 `.env`（密钥不要提交到 Git）
 - 更清晰的 API Key / 超时 / 网络错误提示
 
 ## 环境要求
@@ -39,7 +39,9 @@ npm run typecheck
 
 ## 配置说明
 
-优先读取环境变量；也可使用项目根目录的 `settings.json`（参考 `settings.example.json`）。**不要**把真实 Key 提交进仓库。
+**推荐**：启动后点对话窗口右上角「设置」，填写 API Key / Base URL / 模型，点「保存并应用」（立即生效，写入 Electron `userData/settings.json`）。
+
+也可使用项目根目录 `.env` 或 `settings.json`（参考 `settings.example.json`）。优先级：`userData/settings.json` > `.env` > 项目 `settings.json`。**不要**把真实 Key 提交进仓库。
 
 | 变量 | 说明 |
 | --- | --- |
@@ -57,7 +59,7 @@ OPENAI_MODEL=gpt-4o-mini
 OPENAI_API_MODE=chat_completions
 ```
 
-若对话提示「未配置 / 无效 Key」或「请求超时」，请先确认 Key 与 `OPENAI_BASE_URL` 是否正确，保存后**重启**应用。
+若对话提示「未配置 / 无效 Key」或「请求超时」，请打开「设置」确认 Key 与 Base URL，保存并应用即可（一般无需重启）。
 
 ## 项目结构
 

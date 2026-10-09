@@ -93,7 +93,7 @@ export function configureAgent(config: AppConfig): { ok: boolean; error?: string
     return {
       ok: false,
       error:
-        '未配置 API Key。请在项目根目录创建 .env（参考 .env.example），设置 OPENAI_API_KEY；可选 OPENAI_BASE_URL / OPENAI_MODEL。',
+        '未配置 API Key。请点击对话窗口右上角「设置」，填写 API Key（可选 Base URL / 模型）后保存。也可使用项目 .env。',
     };
   }
 
@@ -105,7 +105,7 @@ export function configureAgent(config: AppConfig): { ok: boolean; error?: string
     return {
       ok: false,
       error:
-        '检测到占位 API Key。请把 .env 里的 OPENAI_API_KEY 换成真实密钥后重启。',
+        '检测到占位 API Key。请打开「设置」填写真实密钥并保存。',
     };
   }
 
@@ -153,8 +153,7 @@ function friendlyError(err: unknown): string {
 
   if (missingKey || /api key|authentication|401|unauthorized/i.test(message)) {
     return (
-      'API Key 无效或未配置。请检查项目根目录 .env 中的 OPENAI_API_KEY' +
-      '（以及可选的 OPENAI_BASE_URL / OPENAI_MODEL），保存后重启 blueBot。\n' +
+      'API Key 无效或未配置。请点击右上角「设置」检查 API Key / Base URL / 模型并保存。\n' +
       `技术细节：${message}`
     );
   }
@@ -183,8 +182,8 @@ export async function chatWithAgent(
     return {
       ok: false,
       error: missingKey
-        ? '尚未配置有效的 API Key。请复制 .env.example 为 .env，填写 OPENAI_API_KEY 后重启。'
-        : 'Agent 尚未就绪。请检查 OPENAI_API_KEY / OPENAI_BASE_URL / OPENAI_MODEL。',
+        ? '尚未配置有效的 API Key。请点击右上角「设置」填写并保存。'
+        : 'Agent 尚未就绪。请打开「设置」检查 API Key / Base URL / 模型。',
     };
   }
 
