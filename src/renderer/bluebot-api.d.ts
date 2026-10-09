@@ -1,43 +1,42 @@
 export {};
 
 declare global {
-  interface Window {
-    blueBot: {
-      updatePage: (payload: {
-        title: string;
-        url: string;
-        text: string;
-      }) => Promise<{ ok: boolean; page?: { title: string; url: string; updatedAt: number }; error?: string }>;
-      getPageMeta: () => Promise<{
-        title: string;
-        url: string;
-        textLength: number;
-        updatedAt: number;
-      }>;
-      clearPage: () => Promise<{ ok: boolean }>;
-      getAgentStatus: () => Promise<{
-        hasApiKey: boolean;
-        model: string;
-        baseURL: string;
-        apiMode: string;
-      }>;
-      chat: (
-        message: string,
-      ) => Promise<
-        { ok: true; reply: string } | { ok: false; error: string }
-      >;
-    };
+  interface WindowMeta {
+    title: string;
+    processName: string;
+    processId: number;
+    textLength: number;
+    updatedAt: number;
+    source: string;
+    error?: string;
   }
 
-  namespace Electron {
-    interface WebviewTag extends HTMLElement {
-      src: string;
-      executeJavaScript: (code: string, userGesture?: boolean) => Promise<unknown>;
-      canGoBack: () => boolean;
-      canGoForward: () => boolean;
-      goBack: () => void;
-      goForward: () => void;
-      reload: () => void;
-    }
+  interface AgentStatus {
+    hasApiKey: boolean;
+    model: string;
+    baseURL: string;
+    apiMode: string;
+    platform: string;
+    uiaAvailable: boolean;
+  }
+
+  interface Window {
+    blueBot: {
+      getAgentStatus: () => Promise<AgentStatus>;
+      chat: (
+        message: string,
+      ) => Promise<{ ok: true; reply: string } | { ok: false; error: string }>;
+      getWindowMeta: () => Promise<WindowMeta>;
+      refreshWindow: () => Promise<{
+        ok: boolean;
+        meta: WindowMeta;
+        error?: string;
+      }>;
+      openChat: () => Promise<{ ok: boolean }>;
+      closeChat: () => Promise<{ ok: boolean }>;
+      toggleChat: () => Promise<{ ok: boolean; open?: boolean }>;
+      movePet: (dx: number, dy: number) => Promise<{ ok: boolean }>;
+      onWindowUpdated: (cb: (meta: WindowMeta) => void) => () => void;
+    };
   }
 }

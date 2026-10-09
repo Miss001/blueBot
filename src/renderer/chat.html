@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>blueBot 对话</title>
+    <link rel="stylesheet" href="./chat.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="titlebar">
+        <div class="brand">
+          <img class="brand-icon" src="../assets/pet.png" alt="" />
+          <div>
+            <div class="brand-name">blueBot</div>
+            <div id="agent-status" class="agent-status">检测中…</div>
+          </div>
+        </div>
+        <div class="titlebar-actions">
+          <button id="btn-refresh" type="button" title="刷新前台窗口">刷新窗口</button>
+          <button id="btn-close" type="button" title="关闭">×</button>
+        </div>
+      </header>
+
+      <section class="focus-card">
+        <div class="focus-label">当前关注窗口</div>
+        <div id="focus-title" class="focus-title">等待同步…</div>
+        <div id="focus-meta" class="focus-meta muted"></div>
+      </section>
+
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+
+      <form id="chat-form" class="chat-form">
+        <textarea
+          id="chat-input"
+          rows="3"
+          placeholder="例如：根据当前窗口，总结要点…"
+        ></textarea>
+        <button id="btn-send" type="submit">发送</button>
+      </form>
+    </div>
+    <script src="./chat.js"></script>
+  </body>
+</html>

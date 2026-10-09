@@ -26,6 +26,7 @@ body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
+  overflow: hidden;
 }
 
 #app {
@@ -34,69 +35,45 @@ body {
   height: 100%;
 }
 
-.topbar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
+.titlebar {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 10px 12px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag;
 }
 
 .brand {
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--accent-2);
-  padding: 0 4px;
-}
-
-.url-bar {
   display: flex;
-  gap: 6px;
   align-items: center;
+  gap: 10px;
   min-width: 0;
 }
 
-.url-bar button,
-#btn-send,
-#btn-go {
-  background: var(--panel-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 10px;
-  cursor: pointer;
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  -webkit-app-region: no-drag;
 }
 
-.url-bar button:hover,
-#btn-send:hover,
-#btn-go:hover {
-  border-color: var(--accent);
-}
-
-#url-input {
-  flex: 1;
-  min-width: 0;
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  outline: none;
-}
-
-#url-input:focus {
-  border-color: var(--accent);
+.brand-name {
+  font-weight: 700;
+  color: var(--accent-2);
+  font-size: 14px;
 }
 
 .agent-status {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
-  white-space: nowrap;
-  max-width: 220px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .agent-status.ok {
@@ -107,83 +84,60 @@ body {
   color: var(--warn);
 }
 
-.main {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  min-height: 0;
-}
-
-.browser-pane,
-.chat-pane {
+.titlebar-actions {
   display: flex;
-  flex-direction: column;
-  min-height: 0;
-  min-width: 0;
+  gap: 6px;
+  -webkit-app-region: no-drag;
 }
 
-.browser-pane {
-  border-right: 1px solid var(--border);
+.titlebar-actions button,
+#btn-send {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
 }
 
-.page-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  align-items: baseline;
-  padding: 8px 12px;
-  background: var(--panel);
+.titlebar-actions button:hover,
+#btn-send:hover {
+  border-color: var(--accent);
+}
+
+#btn-close {
+  width: 32px;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 0;
+}
+
+.focus-card {
+  padding: 10px 12px;
+  background: #121a24;
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
 }
 
-#page-title {
+.focus-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.focus-title {
+  font-size: 13px;
   font-weight: 600;
+  word-break: break-word;
+}
+
+.focus-meta {
+  margin-top: 4px;
+  font-size: 11px;
 }
 
 .muted {
   color: var(--muted);
-}
-
-.sync-badge {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.sync-badge.ok {
-  color: var(--ok);
-}
-
-.sync-badge.err {
-  color: var(--danger);
-}
-
-webview#browser {
-  flex: 1;
-  width: 100%;
-  border: none;
-  background: #fff;
-}
-
-.chat-pane {
-  background: var(--bg);
-}
-
-.chat-header {
-  padding: 12px 14px 8px;
-  border-bottom: 1px solid var(--border);
-  background: var(--panel);
-}
-
-.chat-header h2 {
-  margin: 0 0 4px;
-  font-size: 16px;
-}
-
-.chat-header p {
-  margin: 0;
-  font-size: 12px;
 }
 
 .chat-log {
@@ -193,6 +147,7 @@ webview#browser {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-height: 0;
 }
 
 .msg {
@@ -202,7 +157,7 @@ webview#browser {
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .msg.user {
@@ -241,9 +196,9 @@ webview#browser {
 }
 
 #chat-input {
-  resize: vertical;
+  resize: none;
   min-height: 64px;
-  max-height: 160px;
+  max-height: 120px;
   background: var(--bg);
   color: var(--text);
   border: 1px solid var(--border);
@@ -268,16 +223,4 @@ webview#browser {
 #btn-send:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-@media (max-width: 960px) {
-  .main {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
-  }
-
-  .browser-pane {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
 }

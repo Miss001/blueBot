@@ -1,7 +1,7 @@
 {
   "name": "bluebot",
-  "version": "0.1.0",
-  "description": "blueBot — 带内置浏览器的桌面 Agent，可自动读取当前页面并对话",
+  "version": "0.2.0",
+  "description": "blueBot — Windows 桌面悬浮宠物助手，读取前台窗口并通过 Agents SDK 对话",
   "main": "dist/main/main.js",
   "scripts": {
     "build": "tsc && node scripts/copy-renderer.js",
@@ -12,7 +12,8 @@
   "keywords": [
     "electron",
     "agent",
-    "browser"
+    "desktop-pet",
+    "ui-automation"
   ],
   "author": "Miss001",
   "license": "MIT",
