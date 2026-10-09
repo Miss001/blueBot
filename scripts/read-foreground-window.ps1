@@ -88,13 +88,13 @@ function Get-TitleOf([IntPtr]$h) {
 function Test-ShouldSkip([IntPtr]$h) {
   if ($h -eq [IntPtr]::Zero) { return $true }
   if (-not [BlueBotNative]::IsWindowVisible($h)) { return $true }
-  $pid = Get-PidOf $h
-  if ($exclude.Contains($pid)) { return $true }
+  $winPid = Get-PidOf $h
+  if ($exclude.Contains($winPid)) { return $true }
   $title = Get-TitleOf $h
   if ([string]::IsNullOrWhiteSpace($title)) { return $true }
   if ($title -like 'blueBot*') { return $true }
   try {
-    $pn = (Get-Process -Id $pid -ErrorAction Stop).ProcessName
+    $pn = (Get-Process -Id $winPid -ErrorAction Stop).ProcessName
     if ($pn -eq 'blueBot') { return $true }
   } catch {}
   return $false
